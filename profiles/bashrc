@@ -1,0 +1,27 @@
+export DOTBASHRC_LOADED=1
+#export PATH="/usr/local/bin:/usr/local/sbin:~/bin:$PATH"
+export LC_ALL="en_US.UTF-8"
+export LANG="en_US.UTF-8"
+export LANGUAGE="en_US.UTF-8"
+
+# Homebrew
+#  Don't do auto update
+export HOMEBREW_NO_AUTO_UPDATE=1
+export HOMEBREW_NO_ANALYTICS=1
+
+# Go
+#export PATH="$PATH:/usr/local/opt/go/libexec/bin"
+#export GOPATH="$HOME/go"
+#export PATH="$PATH:$GOPATH/bin"
+
+# Ruby - force brew installed Ruby
+export PATH="/usr/local/opt/ruby/bin:/usr/local/lib/ruby/gems/2.5.0/bin:$PATH"
+
+# Android Environment Variables
+export ANDROID_HOME=/usr/local/share/android-sdk
+
+export PATH=${PATH}:${ANDROID_HOME}/tools
+export PATH=${PATH}:${ANDROID_HOME}/tools/bin
+export PATH=${PATH}:${ANDROID_HOME}/platform-tools
+
+# keep a newline at the end of this file

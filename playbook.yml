@@ -5,11 +5,12 @@
 
 - hosts: all
   # accelerate: true
-  remote_user: vagrant
+  # remote_user: vagrant
   become_method: sudo
   vars:
-    - ansible_sudo_pass: vagrant
-    - param_user: vagrant
+  #   - ansible_sudo_pass: vagrant
+  #   - param_user: vagrant
+    - xcode_path: /Applications/Xcode.app/Contents/Developer
   tasks:
     #
     # Required param checks
@@ -19,22 +20,22 @@
     #  [!] Collect custom script outputs to ~/Desktop/debug.log, for inspection.
     # You can inspect it during setup with $ tail -f ~/Desktop/debug.log
     #  custom installer scripts (the ones in ./installers folder) use this debug log file
-    - name: Setup the debug log file for custom scripts
-      file: path=/Users/{{ param_user }}/Desktop/debug.log
-        state=touch
-        owner="{{ param_user }}"
-        mode=0644
+    # - name: Setup the debug log file for custom scripts
+    #   file: path=/Users/{{ param_user }}/Desktop/debug.log
+    #     state=touch
+    #     owner="{{ param_user }}"
+    #     mode=0644
 
     #
     # Add user to sudoers-no-password
     #  don't require password for running sudo with this user
-    - name: "Add user {{ param_user }} to sudoers with no password"
-      become: yes
-      lineinfile: "dest=/etc/sudoers
-        regexp='^{{ param_user }} ALL'
-        line='{{ param_user }} ALL=(ALL) NOPASSWD: ALL'
-        state=present
-        validate='visudo -cf %s'"
+    # - name: "Add user {{ param_user }} to sudoers with no password"
+    #   become: yes
+    #   lineinfile: "dest=/etc/sudoers
+    #     regexp='^{{ param_user }} ALL'
+    #     line='{{ param_user }} ALL=(ALL) NOPASSWD: ALL'
+    #     state=present
+    #     validate='visudo -cf %s'"
 
     #
     # Switch to Xcode stable, for brew-ing and anything else
@@ -62,134 +63,109 @@
 
     #
     # SSH config
-    - name: ensure .ssh folder is ok
-      file: path=/Users/{{ param_user }}/.ssh
-        state=directory
-        owner="{{ param_user }}"
-        mode=0700
-    - name: copy ssh key to remote's {{ param_user }} user
-      copy: src=setupfiles/authorized_keys
-        dest="/Users/{{ param_user }}/.ssh/authorized_keys"
-        owner="{{ param_user }}"
-        mode=0600
+    # - name: ensure .ssh folder is ok
+    #   file: path=/Users/{{ param_user }}/.ssh
+    #     state=directory
+    #     owner="{{ param_user }}"
+    #     mode=0700
+    # - name: copy ssh key to remote's {{ param_user }} user
+    #   copy: src=setupfiles/authorized_keys
+    #     dest="/Users/{{ param_user }}/.ssh/authorized_keys"
+    #     owner="{{ param_user }}"
+    #     mode=0600
     #
     # Disable every non SSH key based setup option
     #  allow only SSH key based SSH login
-    - name: sshd_config settings
-      become: yes
-      lineinfile: dest=/etc/ssh/sshd_config
-        regexp="{{ item.regexp }}"
-        line="{{ item.line }}"
-        state="{{ item.state }}"
-      with_items:
-        # PasswordAuthentication no
-        - { regexp: '^PasswordAuthentication yes', line: '', state: "absent" }
-        - { regexp: '^PasswordAuthentication no', line: 'PasswordAuthentication no', state: "present" }
-        # PermitEmptyPasswords no
-        - { regexp: '^PermitEmptyPasswords yes', line: '', state: "absent" }
-        - { regexp: '^PermitEmptyPasswords no', line: 'PermitEmptyPasswords no', state: "present" }
-        # # LoginGraceTime 1m
-        - { regexp: '^LoginGraceTime', line: 'LoginGraceTime 1m', state: "present" }
-        # PermitRootLogin no
-        - { regexp: '^PermitRootLogin yes', line: '', state: "absent" }
-        - { regexp: '^PermitRootLogin no', line: 'PermitRootLogin no', state: "present" }
-        # # LogLevel 1m
-        - { regexp: '^LogLevel', line: 'LogLevel VERBOSE', state: "present" }
-        # UsePAM no -> if this is not set to 'no' then password authentication still possible!
-        - { regexp: '^UsePAM yes', line: '', state: "absent" }
-        - { regexp: '^UsePAM no', line: 'UsePAM no', state: "present" }
-        # ChallengeResponseAuthentication
-        - { regexp: '^ChallengeResponseAuthentication yes', line: '', state: "absent" }
-        - { regexp: '^ChallengeResponseAuthentication no', line: 'ChallengeResponseAuthentication no', state: "present" }
-        # UseDNS no -> for better speed
-        - { regexp: '^UseDNS yes', line: '', state: "absent" }
-        - { regexp: '^UseDNS no', line: 'UseDNS no', state: "present" }
-    - name: ssh connection config (user specific)
-      copy: src=setupfiles/ssh-config
-        dest="/Users/{{ param_user }}/.ssh/config"
-        owner="{{ param_user }}"
-        mode=0600
+    # - name: sshd_config settings
+    #   become: yes
+    #   lineinfile: dest=/etc/ssh/sshd_config
+    #     regexp="{{ item.regexp }}"
+    #     line="{{ item.line }}"
+    #     state="{{ item.state }}"
+    #   with_items:
+    #     # PasswordAuthentication no
+    #     - { regexp: '^PasswordAuthentication yes', line: '', state: "absent" }
+    #     - { regexp: '^PasswordAuthentication no', line: 'PasswordAuthentication no', state: "present" }
+    #     # PermitEmptyPasswords no
+    #     - { regexp: '^PermitEmptyPasswords yes', line: '', state: "absent" }
+    #     - { regexp: '^PermitEmptyPasswords no', line: 'PermitEmptyPasswords no', state: "present" }
+    #     # # LoginGraceTime 1m
+    #     - { regexp: '^LoginGraceTime', line: 'LoginGraceTime 1m', state: "present" }
+    #     # PermitRootLogin no
+    #     - { regexp: '^PermitRootLogin yes', line: '', state: "absent" }
+    #     - { regexp: '^PermitRootLogin no', line: 'PermitRootLogin no', state: "present" }
+    #     # # LogLevel 1m
+    #     - { regexp: '^LogLevel', line: 'LogLevel VERBOSE', state: "present" }
+    #     # UsePAM no -> if this is not set to 'no' then password authentication still possible!
+    #     - { regexp: '^UsePAM yes', line: '', state: "absent" }
+    #     - { regexp: '^UsePAM no', line: 'UsePAM no', state: "present" }
+    #     # ChallengeResponseAuthentication
+    #     - { regexp: '^ChallengeResponseAuthentication yes', line: '', state: "absent" }
+    #     - { regexp: '^ChallengeResponseAuthentication no', line: 'ChallengeResponseAuthentication no', state: "present" }
+    #     # UseDNS no -> for better speed
+    #     - { regexp: '^UseDNS yes', line: '', state: "absent" }
+    #     - { regexp: '^UseDNS no', line: 'UseDNS no', state: "present" }
+    # - name: ssh connection config (user specific)
+    #   copy: src=setupfiles/ssh-config
+    #     dest="/Users/{{ param_user }}/.ssh/config"
+    #     owner="{{ param_user }}"
+    #     mode=0600
 
-    #
-    # Setup profiles
-    #  we'll create a ~/.profiles folder and add bitrise specific
-    #  profiles there.
-    - name: ensure .profiles folder is ok
-      file: path=/Users/{{ param_user }}/.profiles
-        state=directory
-        owner="{{ param_user }}"
-        mode=0700
-    # this is the main Bitrise profile, includes
-    #  the bitrise specific environments
-    - name: setup bitrise_profile
-      copy: src=profiles/bitrise_profile
-        dest="/Users/{{ param_user }}/.profiles/bitrise_profile"
-        owner="{{ param_user }}"
-        mode=0600
-    # Includes 3thd party tools specific environments
-    - name: setup tools_profile
-      copy: src=profiles/tools_profile
-        dest="/Users/{{ param_user }}/.profiles/tools_profile"
-        owner="{{ param_user }}"
-        mode=0600
     # ~/.bashrc will load ~/.profiles/bitrise_profile
     #  and the other profiles (~/.profile and ~/.bash_profile) will
     #  load ~/.bashrc, so no matter how the shell is initialized
     #  it'll load all the required Environment Variables
     - name: setup .bashrc
       copy: src=profiles/bashrc
-        dest="/Users/{{ param_user }}/.bashrc"
-        owner="{{ param_user }}"
+        dest="~/.bashrc"
         mode=0600
     - name: setup .profile
       copy: src=profiles/profile
-        dest="/Users/{{ param_user }}/.profile"
-        owner="{{ param_user }}"
+        dest="~/.profile"
         mode=0600
     - name: setup .bash_profile
       copy: src=profiles/bash_profile
-        dest="/Users/{{ param_user }}/.bash_profile"
-        owner="{{ param_user }}"
+        dest="~/.bash_profile"
         mode=0600
 
     # Copy these two plist file to incrase Open File Descriptos
-    - name: "Setup open-file limit"
-      copy:
-        src: setupfiles/limit.maxfiles.plist
-        dest: /Library/LaunchDaemons/imit.maxfiles.plist
-        owner: root
-        group: wheel
-        mode: 0644
-      become: yes
+    # - name: "Setup open-file limit"
+    #   copy:
+    #     src: setupfiles/limit.maxfiles.plist
+    #     dest: /Library/LaunchDaemons/imit.maxfiles.plist
+    #     owner: root
+    #     group: wheel
+    #     mode: 0644
+    #   become: yes
 
-    - name: "Setup max-process limit"
-      copy:
-        src: setupfiles/limit.maxproc.plist
-        dest: /Library/LaunchDaemons/imit.maxproc.plist
-        owner: root
-        group: wheel
-        mode: 0644
-      become: yes
+    # - name: "Setup max-process limit"
+    #   copy:
+    #     src: setupfiles/limit.maxproc.plist
+    #     dest: /Library/LaunchDaemons/imit.maxproc.plist
+    #     owner: root
+    #     group: wheel
+    #     mode: 0644
+    #   become: yes
 
     # Turn off automatic update
-    - name: Turn off macos automatic software updates
-      shell: softwareupdate --schedule off
-      become: yes
+    # - name: Turn off macos automatic software updates
+    #   shell: softwareupdate --schedule off
+    #   become: yes
 
-    # Turn off APSD
-    - name: "Turn off apsd - can be a CPU hog"
-      shell: sudo launchctl unload -w /System/Library/LaunchDaemons/com.apple.apsd.plist
-      become: yes
+    # # Turn off APSD
+    # - name: "Turn off apsd - can be a CPU hog"
+    #   shell: sudo launchctl unload -w /System/Library/LaunchDaemons/com.apple.apsd.plist
+    #   become: yes
 
     # Install bundler for system Ruby
-    - name: install bundler for system ruby
-      shell: bash -l -c "sudo gem install bundler"
-      become: yes
+    # - name: install bundler for system ruby
+    #   shell: bash -l -c "sudo gem install bundler"
+    #   become: yes
 
     #
     # Install and update homebrew
-    - name: run brew installer script
-      script: installers/install_brew.sh creates=/usr/local/bin/brew
+    # - name: run brew installer script
+    #   script: installers/install_brew.sh creates=/usr/local/bin/brew
     - name: brew update
       homebrew: update_homebrew=yes upgrade_all=no
     # brew some commands
@@ -197,60 +173,60 @@
       homebrew: name=git state=present
     - name: brew install wget
       homebrew: name=wget state=present
-    - name: brew install mercurial
-      homebrew: name=mercurial state=present
+    # - name: brew install mercurial
+    #   homebrew: name=mercurial state=present
     - name: brew install node
       homebrew: name=node@8 state=present # Node LTS 8.x
     - name: brew link node@8
       command: /usr/local/bin/brew link --overwrite --force node@8 # force link Node LTS 8.x
-    - name: brew install ansible
-      homebrew: name=ansible state=present
+    # - name: brew install ansible
+    #   homebrew: name=ansible state=present
     - name: brew install coreutils
       homebrew: name=coreutils state=present
     - name: brew install watchman
       homebrew: name=watchman state=present
-    - name: brew install flow
-      homebrew: name=flow state=present
+    # - name: brew install flow
+    #   homebrew: name=flow state=present
     - name: brew install tree
       homebrew: name=tree state=present
-    - name: brew install carthage
-      homebrew: name=carthage state=present
-    - name: brew install imagemagick
-      homebrew: name=imagemagick state=present
-    - name: brew install ghostscript
-      homebrew: name=ghostscript state=present
+    # - name: brew install carthage
+    #   homebrew: name=carthage state=present
+    # - name: brew install imagemagick
+    #   homebrew: name=imagemagick state=present
+    # - name: brew install ghostscript
+    #   homebrew: name=ghostscript state=present
     - name: brew install yarn
       homebrew: name=yarn state=present
-    - name: brew install screen
-      homebrew: name=screen state=present
+    # - name: brew install screen
+    #   homebrew: name=screen state=present
 
-    - name: brew install java
-      homebrew_cask: name=java state=present
+    # - name: brew install java
+    #   homebrew_cask: name=java state=present
 
     # Ruby
     - name: brew install ruby
       homebrew: name=ruby state=present
-    - name: Create ruby symbolic links
-      file:
-        src: "{{ item }}"
-        dest: "/usr/local/bin/{{ item | basename }}"
-        state: link
-      with_fileglob:
-        - "/usr/local/opt/ruby/bin/*"
+    # - name: Create ruby symbolic links
+    #   file:
+    #     src: "{{ item }}"
+    #     dest: "/usr/local/bin/{{ item | basename }}"
+    #     state: link
+    #   with_fileglob:
+    #     - "/usr/local/opt/ruby/bin/*"
 
 
     ## Go
     # Gopath is $HOME/go
-    - name: brew install go
-      homebrew: name=go state=present
-    - name: prepare GOPATH dirs
-      file: path="/Users/{{ param_user }}/go/{{ item.fold_path }}"
-        state=directory
-        owner="{{ param_user }}"
-      with_items:
-        - { fold_path: 'src' }
-        - { fold_path: 'bin' }
-        - { fold_path: 'pkg' }
+    # - name: brew install go
+    #   homebrew: name=go state=present
+    # - name: prepare GOPATH dirs
+    #   file: path="/Users/{{ param_user }}/go/{{ item.fold_path }}"
+    #     state=directory
+    #     owner="{{ param_user }}"
+    #   with_items:
+    #     - { fold_path: 'src' }
+    #     - { fold_path: 'bin' }
+    #     - { fold_path: 'pkg' }
 
 
     # Default ruby version (brew installed ruby)
@@ -258,7 +234,7 @@
       shell: bash -l -c "gem update --system --no-document"
       when: is_incremental_setup|default(false) == false
     - name: gem install tools
-      shell: bash -l -c "gem install --no-document cocoapods nomad-cli xcpretty fastlane"
+      shell: bash -l -c "gem install --no-document cocoapods" #nomad-cli xcpretty fastlane"
       when: is_incremental_setup|default(false) == false
     - name: bundle version
       shell: bash -l -c "bundle --version"
@@ -269,67 +245,151 @@
       when: is_incremental_setup|default(false) == false
 
     # NPM global packages
-    - name: npm install -g tools
-      shell: bash -l -c "npm install -g ionic cordova"
-      when: is_incremental_setup|default(false) == false
+    # - name: npm install -g tools
+    #   shell: bash -l -c "npm install -g ionic cordova"
+    #   when: is_incremental_setup|default(false) == false
 
     # Git config
-    - name: "git config user.email"
-      shell: bash -l -c 'git config --global user.email "letsconnect@bitrise.io"'
-    - name: "git config user.name"
-      shell: bash -l -c 'git config --global user.name "Bitrise Bot"'
+    # - name: "git config user.email"
+    #   shell: bash -l -c 'git config --global user.email "letsconnect@bitrise.io"'
+    # - name: "git config user.name"
+    #   shell: bash -l -c 'git config --global user.name "Bitrise Bot"'
 
     # Git LFS
-    - name: "brew install git lfs"
-      homebrew: name=git-lfs state=present
-    - name: "run git lfs install"
-      shell: bash -l -c 'git lfs install'
+    # - name: "brew install git lfs"
+    #   homebrew: name=git-lfs state=present
+    # - name: "run git lfs install"
+    #   shell: bash -l -c 'git lfs install'
 
     #
     # Setup Bitrise specific folders
     #
     # Setup the base folders / paths, referenced by ~/.profiles/bitrise_profile
     # These folders will be created in the HOME directory.
-    - name: Setup Bitrise specific folders
-      file: path="/Users/{{ param_user }}/{{ item.fold_path }}"
-        state=directory
-        owner="{{ param_user }}"
-      with_items:
-        # BITRISE_SOURCE_DIR
-        - { fold_path: 'git' }
-        # BITRISE_STEP_DIR
-        - { fold_path: 'stepdir' }
-        # BITRISE_DEPLOY_DIR
-        - { fold_path: 'deploy' }
-        # BITRISE_LIBRARY_DIR
-        - { fold_path: 'Library/MobileDevice/Provisioning Profiles' }
-        # BITRISE_PROFILE_DIR
-        - { fold_path: 'profiles' }
-        # BITRISE_SYM_ROOT
-        - { fold_path: 'build' }
-        # BITRISE_OBJ_ROOT
-        - { fold_path: 'bin' }
-        # BITRISE_FOLDER_PATH
-        - { fold_path: 'bitrise' }
-        # BITRISE_STEP_DATA_FOLDER_PATH
-        - { fold_path: 'bitrise/stepdata' }
-        #
-        - { fold_path: 'bitrise/tools' }
+    # - name: Setup Bitrise specific folders
+    #   file: path="/Users/{{ param_user }}/{{ item.fold_path }}"
+    #     state=directory
+    #     owner="{{ param_user }}"
+    #   with_items:
+    #     # BITRISE_SOURCE_DIR
+    #     - { fold_path: 'git' }
+    #     # BITRISE_STEP_DIR
+    #     - { fold_path: 'stepdir' }
+    #     # BITRISE_DEPLOY_DIR
+    #     - { fold_path: 'deploy' }
+    #     # BITRISE_LIBRARY_DIR
+    #     - { fold_path: 'Library/MobileDevice/Provisioning Profiles' }
+    #     # BITRISE_PROFILE_DIR
+    #     - { fold_path: 'profiles' }
+    #     # BITRISE_SYM_ROOT
+    #     - { fold_path: 'build' }
+    #     # BITRISE_OBJ_ROOT
+    #     - { fold_path: 'bin' }
+    #     # BITRISE_FOLDER_PATH
+    #     - { fold_path: 'bitrise' }
+    #     # BITRISE_STEP_DATA_FOLDER_PATH
+    #     - { fold_path: 'bitrise/stepdata' }
+    #     #
+    #     - { fold_path: 'bitrise/tools' }
 
     # Sync the tools/ dir
-    - name: Sync the tools dir
-      synchronize: src=tools/ dest="/Users/{{ param_user }}/bitrise/tools/"
+    # - name: Sync the tools dir
+    #   synchronize: src=tools/ dest="/Users/{{ param_user }}/bitrise/tools/"
 
     #
     # Install cmd-bridge
-    - name: run cmd-bridge installer script
-      script: installers/install_cmd-bridge.sh
+    # - name: run cmd-bridge installer script
+    #   script: installers/install_cmd-bridge.sh
 
-    #
-    # Switch to Xcode stable, the default Xcode for building
-    - name: Switch to Xcode stable, the default Xcode for building
-      shell: bash -l -c "xcode-select --switch {{ xcode_path }}"
+    # Java 8 install
+    # We need Java 8 because sdkmanager doesn't support newer Java versions (yet)
+    # Also we need to manually call launchctl because otherwise it breaks the brew uninstall task
+    - name: Stop Java's Helper-Tool
+      shell: launchctl remove com.oracle.java.Helper-Tool
       become: yes
+      ignore_errors: yes
+    - name: Stop Java's Java-Updater
+      shell: launchctl remove com.oracle.java.Java-Updater
+      become: yes
+      ignore_errors: yes
+    - name: brew uninstall latest java
+      homebrew_cask: name=java state=absent
+    - name: brew tap homebrew/cask-versions
+      homebrew_tap: name='homebrew/cask-versions' state=present
+    - name: brew install java8
+      homebrew_cask: name=java8 state=present
+
+    # ------------------------------------------------------
+    # --- Install Android SDKs and other build packages
+    
+    - name: brew cask install android-sdk
+      homebrew_cask: name=android-sdk state=present
+
+    # Other tools and resources of Android SDK
+    #  you should only install the packages you need!
+
+    - name: install android tools
+      shell: "(echo y | sdkmanager '{{ item }}') || (echo y | sdkmanager '{{ item }}')"
+      loop:
+        - "emulator"
+        - "tools"
+        - "platform-tools"
+        - "platforms;android-28"
+        - "platforms;android-27"
+        # - "platforms;android-26"
+        # - "platforms;android-25"
+        # - "platforms;android-24"
+        # - "platforms;android-23"
+        # - "platforms;android-22"
+        # - "platforms;android-21"
+        # - "platforms;android-19"
+        # - "platforms;android-17"
+        # - "platforms;android-15"
+        - "build-tools;28.0.3"
+        - "build-tools;28.0.2"
+        # - "build-tools;28.0.1"
+        # - "build-tools;28.0.0"
+        # - "build-tools;27.0.3"
+        # - "build-tools;27.0.2"
+        # - "build-tools;27.0.1"
+        # - "build-tools;27.0.0"
+        # - "build-tools;26.0.2"
+        # - "build-tools;26.0.1"
+        # - "build-tools;25.0.3"
+        # - "build-tools;24.0.3"
+        # - "build-tools;23.0.3"
+        # - "build-tools;22.0.1"
+        # - "build-tools;21.1.2"
+        # - "build-tools;19.1.0"
+        # - "build-tools;17.0.0"
+        - "system-images;android-28;google_apis;x86"
+        # - "system-images;android-26;google_apis;x86"
+        # - "system-images;android-25;google_apis;armeabi-v7a"
+        # - "system-images;android-24;default;armeabi-v7a"
+        # - "system-images;android-22;default;armeabi-v7a"
+        # - "system-images;android-19;default;armeabi-v7a"
+        - "extras;android;m2repository"
+        - "extras;google;m2repository"
+        - "extras;google;google_play_services"
+        # - "extras;m2repository;com;android;support;constraint;constraint-layout;1.0.2"
+        # - "extras;m2repository;com;android;support;constraint;constraint-layout;1.0.1"
+        # - "add-ons;addon-google_apis-google-23"
+        # - "add-ons;addon-google_apis-google-22"
+        # - "add-ons;addon-google_apis-google-21"
+
+    # buildkite agent
+    - name: brew tap buildkite/buildkite
+      homebrew_tap: name='buildkite/buildkite' state=present
+    - name: brew install buildkite-agent
+      homebrew: name=buildkite-agent install_options=token={{ buildkite_token }} state=present
+    - name: set shell for the buildkite agent
+      lineinfile:
+        path: /usr/local/etc/buildkite-agent/buildkite-agent.cfg
+        regexp: '^shell='
+        # '-l' so it sources bashrc
+        line: 'shell=/bin/bash -l -e -c'
+    - name: brew services start buildkite/buildkite/buildkite-agent
+      shell: bash -l -c "brew services start buildkite/buildkite/buildkite-agent"
 
     #
     # Final debug prints
